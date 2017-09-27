@@ -8,4 +8,6 @@ My own implementation of grep.
 2. Implement filtering the list of files by regexp.
 3. Implement output (logging) to console with different modes.
 4. Parallel files processing.
-5. Web interface
+5. Web interface.
+
+After each stage add unit tests.
