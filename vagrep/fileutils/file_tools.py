@@ -16,7 +16,7 @@ def get_files_from_dir(dirpath):
     """
 
     dirpath = os.path.abspath(dirpath)
-    dpath, _, filenames = next(os.walk)
+    dpath, _, filenames = next(os.walk(dirpath))
     return [os.path.join(dpath, filename) for filename in filenames]
 
 
@@ -30,7 +30,7 @@ def get_files_from_dir_rec(dirpath):
     """
 
     dirpath = os.path.abspath(dirpath)
-    for dpath, _, filenames in os.walk:
+    for dpath, _, filenames in os.walk(dirpath):
         for filename in filenames:
             yield os.path.join(dpath, filename)
 
