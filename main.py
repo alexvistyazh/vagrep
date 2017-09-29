@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import argparse
+import multiprocessing
 import vagrep.fileutils.file_tools as ftools
 import vagrep.searchers.funcs as funcs
 import vagrep.processors.processor as processor
@@ -71,8 +72,8 @@ def main():
         def files_receiver(_, files):
             return ftools.filter_filenames_by_re(files, args.absregex)
     else:
-        def files_receiver(_, d):
-            return ftools.filter_filenames_by_re(d, '.*')
+        def files_receiver(_, files):
+            return ftools.filter_filenames_by_re(files, '.*')
 
     if args.pattern is not None:
         pr = processor.ProcessorByPattern(args.pattern, args.inverse)
@@ -94,12 +95,19 @@ def main():
     if args.foldersrec is None:
         args.foldersrec = []
 
+    def process_file(f):
+        with open(f) as text:
+            p = multiprocessing.Process(target=funcs.process_text,
+                                        args=(get_consumer(f),
+                                              text, pr, bef, aft))
+            p.start()
+
     for original_f in args.files:
         f = os.path.abspath(original_f)
         if not os.path.isfile(f):
             parser.error('the item you pass to files is not exist: %s'
                          % original_f)
-        funcs.process_text(get_consumer(f), open(f), pr, bef, aft)
+        process_file(f)
 
     for original_d in args.folders:
         d = os.path.abspath(original_d)
@@ -107,7 +115,7 @@ def main():
             parser.error('%s is not existing directory' % original_d)
         files = files_receiver(d, ftools.get_files_from_dir(d))
         for f in files:
-            funcs.process_text(get_consumer(f), open(f), pr, bef, aft)
+            process_file(f)
 
     for original_d in args.foldersrec:
         d = os.path.abspath(original_d)
@@ -115,7 +123,8 @@ def main():
             parser.error('%s is not existing directory' % original_d)
         files = files_receiver(d, ftools.get_files_from_dir_rec(d))
         for f in files:
-            funcs.process_text(get_consumer(f), open(f), pr, bef, aft)
+            process_file(f)
+
 
 if __name__ == '__main__':
     main()
