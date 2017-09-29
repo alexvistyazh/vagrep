@@ -39,13 +39,11 @@ def main():
 
     args = parser.parse_args()
 
-    print args
-
     if args.A is not None and (args.L is not None or args.R is not None):
         parser.error('only one can be set [-A | [-L L -R R]]')
 
     if (args.A is not None or args.L is not None or args.R is not None)\
-            and args.count is not None:
+            and args.count:
         parser.error('you dont need to count lines '
                      'and print context simultaneously')
 
@@ -67,20 +65,19 @@ def main():
             aft = args.R
 
     if args.relregex is not None:
-        def files_receiver(files):
-            return ftools.filter_relpath_by_re(files, args.relregex)
+        def files_receiver(dpath, files):
+            return ftools.filter_relpath_by_re(dpath, files, args.relregex)
     elif args.absregex is not None:
-        def files_receiver(files):
+        def files_receiver(_, files):
             return ftools.filter_filenames_by_re(files, args.absregex)
     else:
-        def files_receiver(d):
-            return ftools.filter_relpath_by_re(d, '.*')
+        def files_receiver(_, d):
+            return ftools.filter_filenames_by_re(d, '.*')
 
     if args.pattern is not None:
         pr = processor.ProcessorByPattern(args.pattern, args.inverse)
     elif args.text is not None:
         args.pattern = ''.join(map(lambda x: '[' + x + ']', args.text))
-        print args.pattern
         pr = processor.ProcessorByPattern(args.pattern, args.inverse)
 
     if args.count:
@@ -108,7 +105,7 @@ def main():
         d = os.path.abspath(original_d)
         if not os.path.isdir(d):
             parser.error('%s is not existing directory' % original_d)
-        files = files_receiver(ftools.get_files_from_dir(d))
+        files = files_receiver(d, ftools.get_files_from_dir(d))
         for f in files:
             funcs.process_text(get_consumer(f), open(f), pr, bef, aft)
 
@@ -116,7 +113,7 @@ def main():
         d = os.path.abspath(original_d)
         if not os.path.isdir(d):
             parser.error('%s is not existing directory' % original_d)
-        files = files_receiver(ftools.get_files_from_dir_rec(d))
+        files = files_receiver(d, ftools.get_files_from_dir_rec(d))
         for f in files:
             funcs.process_text(get_consumer(f), open(f), pr, bef, aft)
 

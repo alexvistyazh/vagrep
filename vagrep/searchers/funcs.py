@@ -35,7 +35,7 @@ def process_text(consumer, text, processor, bef=0, aft=0):
     :param aft: how many lines after should be in context
     """
 
-    text = (line[0:len(line)-2] for line in text)
+    text = (line[0:len(line)-1] for line in text)
 
     deqleft = 0
     deqright = -1
