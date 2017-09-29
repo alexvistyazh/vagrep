@@ -7,6 +7,19 @@ import re
 """ Helper functions for receiving the list of files """
 
 
+def get_all_from_dir(dirpath):
+    """
+    Function for returning list of files and directories from given directory
+
+    :param dirpath: path to directory
+    :return: list of paths to files and directories
+    """
+
+    dirpath = os.path.abspath(dirpath)
+    dpath, dirs, filenames = next(os.walk(dirpath))
+    return [os.path.join(dpath, filename) for filename in (filenames+dirs)]
+
+
 def get_files_from_dir(dirpath):
     """
     Function for returning list of files from given directory
