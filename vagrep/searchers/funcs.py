@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from collections import deque
+import itertools
 
 
 def generator_poll(iterable):
@@ -16,7 +17,13 @@ def generator_poll(iterable):
     return res
 
 
-def process_text(consumer, text, processor, consumer, bef=0, aft=0):
+def deque_slice(d, l, r):
+    if r == -1:
+        r = len(d)
+    return list(itertools.islice(d, l, r))
+
+
+def process_text(consumer, text, processor, bef=0, aft=0):
     """
     Function which process text line by line and find lines which match to
         matcher in processor.
@@ -27,6 +34,9 @@ def process_text(consumer, text, processor, consumer, bef=0, aft=0):
     :param bef: how many lines before should be in context
     :param aft: how many lines after should be in context
     """
+
+    text = (line[0:len(line)-2] for line in text)
+
     deqleft = 0
     deqright = -1
     deq = deque()
@@ -48,5 +58,7 @@ def process_text(consumer, text, processor, consumer, bef=0, aft=0):
             break
         line = deq[index - deqleft]
         if processor.match(line):
-            processor.process(consumer, deq[0:index - deqleft], line, index,
-                              deq[index - deqleft + 1:-1])
+            processor.process(consumer, deque_slice(deq, 0, index - deqleft),
+                              line, index,
+                              deque_slice(deq, index - deqleft + 1, -1))
+    consumer.finish()

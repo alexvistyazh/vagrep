@@ -52,7 +52,8 @@ def formatted_occurences(line, prog):
         concatlist.append(line[0:occurences[0][0]])
         for i in xrange(len(occurences)):
             borders = occurences[i]
-            cur = TerminalColors.BOLD + TerminalColors.OKGREEN +\
+            cur = TerminalColors.UNDERLINE + TerminalColors.BOLD +\
+                TerminalColors.OKGREEN +\
                 line[borders[0]:borders[1]] + TerminalColors.ENDC
             concatlist.append(cur)
             borders = [occurences[i][1],
@@ -71,16 +72,49 @@ class ConsumerPattern(Consumer):
         self.out = out
 
     def consume(self, lcontext, line, index, rcontext, prog):
-        res = 'Left context:\n'\
-              '{lcontext}\n'\
+        lcontext = filter(lambda x: len(x) > 0, lcontext)
+        rcontext = filter(lambda x: len(x) > 0, rcontext)
+        if len(lcontext) == 0:
+            lres = ''
+        else:
+            lres = 'Left context:\n' + '\n'.join(lcontext) + '\n'
+        if len(rcontext) == 0:
+            rres = ''
+        else:
+            rres = 'Right context:\n' + '\n'.join(rcontext) + '\n'
+        res = '{lcontext}'\
               '{path}:{index}: {res}\n'\
-              'Right context:\n'\
-              '{rcontext}\n'\
-              .format(lcontext='\n'.join(lcontext),
-                      path=self.fname,
-                      index=index,
+              '{rcontext}'\
+              .format(lcontext=lres,
+                      path=TerminalColors.HEADER + self.fname +
+                      TerminalColors.ENDC,
+                      index=TerminalColors.OKBLUE + str(index) +
+                      TerminalColors.ENDC,
                       res=formatted_occurences(line, prog),
-                      rcontext='\n'.join(rcontext))
+                      rcontext=rres)
+        self.out.write(res)
+
+    def finish(self):
+        pass
+
+
+class ConsumerCounter(Consumer):
+    """
+    Consumer which outputs number of found lines in file
+    """
+    def __init__(self, fname, out):
+        self.fname = fname
+        self.out = out
+        self.counter = 0
+
+    def consume(self, *args):
+        self.counter += 1
+
+    def finish(self):
+        res = '{path}: {cnt} lines are found\n'\
+              .format(path=TerminalColors.HEADER + self.fname +
+                      TerminalColors.ENDC,
+                      cnt=self.counter)
         self.out.write(res)
 
 
@@ -91,9 +125,9 @@ class ProcessorByPattern(Processor):
 
     def match(self, line):
         if not self.inverse:
-            return self.prog.match(line)
+            return self.prog.search(line)
         else:
-            return not self.prog.match(line)
+            return not self.prog.search(line)
 
     def process(self, consumer, lcontext, line, index, rcontext):
         consumer.consume(lcontext, line, index, rcontext, self.prog)
