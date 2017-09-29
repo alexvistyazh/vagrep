@@ -14,13 +14,16 @@ class TerminalColors(object):
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-    def disable_colors(self):
-        self.HEADER = ''
-        self.OKBLUE = ''
-        self.OKGREEN = ''
-        self.WARNING = ''
-        self.FAIL = ''
-        self.ENDC = ''
+    @staticmethod
+    def disable_colors():
+        TerminalColors.HEADER = ''
+        TerminalColors.OKBLUE = ''
+        TerminalColors.OKGREEN = ''
+        TerminalColors.WARNING = ''
+        TerminalColors.FAIL = ''
+        TerminalColors.ENDC = ''
+        TerminalColors.BOLD = ''
+        TerminalColors.UNDERLINE = ''
 
 
 class Processor(object):

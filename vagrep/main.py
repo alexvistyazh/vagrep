@@ -8,6 +8,7 @@ import vagrep.searchers.funcs as funcs
 import vagrep.processors.processor as processor
 import os
 import sys
+from vagrep.processors.processor import TerminalColors
 
 
 def main():
@@ -33,6 +34,7 @@ def main():
     parser.add_argument('-i', '--inverse', action='store_true', default=False)
 
     parser.add_argument('-c', '--count', action='store_true', default=False)
+    parser.add_argument('--disablecolor', action='store_true', default=False)
 
     group_find = parser.add_mutually_exclusive_group(required=True)
     group_find.add_argument('--pattern', help='what to find (regex)')
@@ -64,6 +66,9 @@ def main():
             if args.R < 0:
                 parser.error('-R argument accepts only non-negative integer')
             aft = args.R
+
+    if args.disablecolor:
+        TerminalColors.disable_colors()
 
     if args.relregex is not None:
         def files_receiver(dpath, files):
